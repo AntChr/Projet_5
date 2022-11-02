@@ -73,7 +73,7 @@ fetch(`http://localhost:3000/api/products/${id}`)
                     altTxt: productID.altTxt,
                     id_product: productID._id,
                     couleur: couleurchoisi,
-                    quantite: quantiteselect,
+                    quantite: parseInt(quantiteselect),
                     prix: productID.price,
                }
                console.log(optionsProduit);
@@ -86,7 +86,6 @@ fetch(`http://localhost:3000/api/products/${id}`)
                let produitinLocalStorage = JSON.parse(localStorage.getItem("produit"))
                //Converti le local storage qui est JSON en objet JavaScript
 
-               console.log(produitinLocalStorage);
                // Fonction fenêtre pop up qui redirige vers le panier ou l'accueil si la personne veut selectionner d'autres produits
                const fenConfirmation = () => {
                     if(window.confirm( ` ${quantiteselect} ${productID.name} couleur : ${couleurchoisi} a bien été ajouté au panier
@@ -106,18 +105,29 @@ fetch(`http://localhost:3000/api/products/${id}`)
                     localStorage.setItem("produit",JSON.stringify(produitinLocalStorage));
                };
                // Si il y a déjà des produits d'enregistré dans le local storage
-               if(produitinLocalStorage){
-                    ajoutProduitLocalStorage();
-                    fenConfirmation ();
+               function getProduit() {
+                    let items = localStorage.getItem("produit");
+                    if (items == null) {
+                         return [];
+                    } else {
+                         return JSON.parse(items);
+                    }
+               }
+               function addProduct (product) {
+                    let items = getProduit ();
+                    let foundProduct = items.find(elt => elt.id_product == product.id_product && elt.couleur == product.couleur);
+                    if (foundProduct != undefined) {
+                         foundProduct.quantite ++;
+                    } else {
+                         product.quantite = 1;
+                         items.push(product);
+                    }
+                    localStorage.setItem("produit",JSON.stringify(items));
+               }
+               addProduct(optionsProduit);
+                
+          })
 
-               }
-               //Si il n'y a pas de produit d'enregistré dans le local storage
-               else{
-                    produitinLocalStorage =[];
-                    ajoutProduitLocalStorage();
-                    fenConfirmation ();
-               }
-          })  
      })
 
      .catch(error => console.log(error)) 
