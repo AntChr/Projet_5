@@ -34,9 +34,10 @@ fetch("http://localhost:3000/api/products")
             </article>`;
                 positionpanier.innerHTML = ProduitPanier;
             }
-        
 
 
+            
+            
         // Supprimer l'article
 
         // position de tous les boutons supprimer
@@ -71,7 +72,6 @@ fetch("http://localhost:3000/api/products")
                 localStorage.setItem("produit", JSON.stringify(produitinLocalStorage));
                 window.location.reload(true);
             })
-            console.log(produitinLocalStorage.quantite);
 
         });
 
@@ -96,7 +96,7 @@ fetch("http://localhost:3000/api/products")
         const reducer = (accumulator, currentValue) => accumulator + currentValue;
         const prixTotal = prixTotalCalcul.reduce(reducer, 0);
         const quantiteTotal = quantiteTotalPanier.reduce(reducer);
-
+        
 
         positionquantitetotal.innerHTML = quantiteTotal;
         positionprixtotal.innerHTML = prixTotal;
@@ -108,12 +108,12 @@ fetch("http://localhost:3000/api/products")
         // addEventlistener lorsqu'on clique sur le bouton commander
         positionbtnorder.addEventListener("click", (e) => {
             e.preventDefault();
-            const FormulaireValues = {
-                prenom: document.querySelector("#firstName").value,
-                nom: document.querySelector("#lastName").value,
-                adresse: document.querySelector("#address").value,
-                ville: document.querySelector("#city").value,
-                mail: document.querySelector("#email").value,
+            const Contact = {
+                firstName: document.querySelector("#firstName").value,
+                lastName: document.querySelector("#lastName").value,
+                adress: document.querySelector("#address").value,
+                city: document.querySelector("#city").value,
+                email: document.querySelector("#email").value,
             }
 
             // Gestion Formulaire
@@ -134,7 +134,7 @@ fetch("http://localhost:3000/api/products")
                 return /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)
             }
             function prenomControle() {
-                const lePrenom = FormulaireValues.prenom;
+                const lePrenom = Contact.firstName;
                 if (regExPrenomNom(lePrenom)) {
                     document.querySelector("#firstNameErrorMsg").textContent = ""
                     return true
@@ -146,7 +146,7 @@ fetch("http://localhost:3000/api/products")
             }
 
             function nomControle() {
-                const leNom = FormulaireValues.nom;
+                const leNom = Contact.lastName;
                 if (regExPrenomNom(leNom)) {
                     document.querySelector("#lastNameErrorMsg").textContent = ""
                     return true
@@ -157,7 +157,7 @@ fetch("http://localhost:3000/api/products")
                 };
             }
             function adresseControle() {
-                const LAdresse = FormulaireValues.adresse;
+                const LAdresse = Contact.adress;
                 if (regExAdresseVille(LAdresse)) {
                     document.querySelector("#addressErrorMsg").textContent = ""
                     return true
@@ -168,7 +168,7 @@ fetch("http://localhost:3000/api/products")
                 };
             }
             function villeControle() {
-                const laVille = FormulaireValues.ville;
+                const laVille = Contact.city;
                 if (regExAdresseVille(laVille)) {
                     document.querySelector("#cityErrorMsg").textContent = ""
                     return true
@@ -179,7 +179,7 @@ fetch("http://localhost:3000/api/products")
                 };
             }
             function mailControle() {
-                const leMail = FormulaireValues.mail;
+                const leMail = Contact.email;
                 if (regExmail(leMail)) {
                     document.querySelector("#emailErrorMsg").textContent = ""
                     return true
@@ -189,28 +189,46 @@ fetch("http://localhost:3000/api/products")
                     return false
                 };
             }
+
             // Récupération des valeurs du formulaire pour les mettre dans le local storage
             if (prenomControle() && nomControle() && adresseControle() && villeControle() && mailControle()) {
-                localStorage.setItem("FormulaireValues", JSON.stringify(FormulaireValues));
+                localStorage.setItem("Contact", JSON.stringify(Contact));
             } else {
                 alert("Veuillez bien remplir le formulaire");
             }
+            // Récupération des id des produits
+            let products = [];
+            for (h = 0; h < produitinLocalStorage.length; h++) {
+                let AllID = produitinLocalStorage[h].id_product;
+
+                products.push(AllID)
+                
+            }
+                localStorage.setItem("products",JSON.stringify(products));
+            
             // Mettre les values du formulaire et les produits dans un objet à envoyer au serveur
-            const aEnvoyer = {
-                produitinLocalStorage,
-                FormulaireValues
+            let aEnvoyer = {
+                Contact,
+                products
             };
-        
-            const exportData = fetch('http://localhost:3000/api/products', {
+            console.log(aEnvoyer);
+           
+
+            
+            fetch('http://localhost:3000/api/order', {
                 method: "POST",
-                body: JSON.stringify(aEnvoyer),
+                body: JSON.stringify(Contact,products),
                 headers: {
                     "Content-Type": "application/json",
 
                 },
             })
-                .then((rep) => {
-                    if
-                        (windows.location.href = "confirmation.html?order=" + rep.orderId){}})
-                })
-            })
+                .then((rep) => rep.json())
+                .then((data)=>{
+                    window.location.href = "confirmation.html?orderId="+ data.orderId
+                localStorage.clear();})
+
+
+            
+        })
+    })
