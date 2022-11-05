@@ -2,7 +2,7 @@ let produitinLocalStorage = JSON.parse(localStorage.getItem("produit"));
 
 fetch("http://localhost:3000/api/products")
     .then(async (rep) => {
-        console.log(rep);
+        
         const productID = await rep.json();
         // Affichage des produits du panier
 
@@ -108,10 +108,10 @@ fetch("http://localhost:3000/api/products")
         // addEventlistener lorsqu'on clique sur le bouton commander
         positionbtnorder.addEventListener("click", (e) => {
             e.preventDefault();
-            const Contact = {
+            const contact = {
                 firstName: document.querySelector("#firstName").value,
                 lastName: document.querySelector("#lastName").value,
-                adress: document.querySelector("#address").value,
+                address: document.querySelector("#address").value,
                 city: document.querySelector("#city").value,
                 email: document.querySelector("#email").value,
             }
@@ -134,7 +134,7 @@ fetch("http://localhost:3000/api/products")
                 return /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)
             }
             function prenomControle() {
-                const lePrenom = Contact.firstName;
+                const lePrenom = contact.firstName;
                 if (regExPrenomNom(lePrenom)) {
                     document.querySelector("#firstNameErrorMsg").textContent = ""
                     return true
@@ -146,7 +146,7 @@ fetch("http://localhost:3000/api/products")
             }
 
             function nomControle() {
-                const leNom = Contact.lastName;
+                const leNom = contact.lastName;
                 if (regExPrenomNom(leNom)) {
                     document.querySelector("#lastNameErrorMsg").textContent = ""
                     return true
@@ -157,7 +157,7 @@ fetch("http://localhost:3000/api/products")
                 };
             }
             function adresseControle() {
-                const LAdresse = Contact.adress;
+                const LAdresse = contact.adress;
                 if (regExAdresseVille(LAdresse)) {
                     document.querySelector("#addressErrorMsg").textContent = ""
                     return true
@@ -168,7 +168,7 @@ fetch("http://localhost:3000/api/products")
                 };
             }
             function villeControle() {
-                const laVille = Contact.city;
+                const laVille = contact.city;
                 if (regExAdresseVille(laVille)) {
                     document.querySelector("#cityErrorMsg").textContent = ""
                     return true
@@ -179,7 +179,7 @@ fetch("http://localhost:3000/api/products")
                 };
             }
             function mailControle() {
-                const leMail = Contact.email;
+                const leMail = contact.email;
                 if (regExmail(leMail)) {
                     document.querySelector("#emailErrorMsg").textContent = ""
                     return true
@@ -192,43 +192,39 @@ fetch("http://localhost:3000/api/products")
 
             // Récupération des valeurs du formulaire pour les mettre dans le local storage
             if (prenomControle() && nomControle() && adresseControle() && villeControle() && mailControle()) {
-                localStorage.setItem("Contact", JSON.stringify(Contact));
+                localStorage.setItem("contact", JSON.stringify(contact));
             } else {
                 alert("Veuillez bien remplir le formulaire");
             }
             // Récupération des id des produits
-            let products = [];
+            let products_Id = [];
             for (h = 0; h < produitinLocalStorage.length; h++) {
                 let AllID = produitinLocalStorage[h].id_product;
 
-                products.push(AllID)
+                products_Id.push(AllID)
                 
             }
-                localStorage.setItem("products",JSON.stringify(products));
             
             // Mettre les values du formulaire et les produits dans un objet à envoyer au serveur
-            let aEnvoyer = {
-                Contact,
-                products
-            };
-            console.log(aEnvoyer);
-           
-
-            
-            fetch('http://localhost:3000/api/order', {
+            fetch('http://localhost:3000/api/products/order', {
                 method: "POST",
-                body: JSON.stringify(Contact,products),
                 headers: {
                     "Content-Type": "application/json",
 
                 },
+                body: JSON.stringify({
+                    contact:contact,
+                    products:products_Id
+                }),
             })
-                .then((rep) => rep.json())
-                .then((data)=>{
+            .then((rep)=>rep.json())
+            .then((data)=>{
                     window.location.href = "confirmation.html?orderId="+ data.orderId
-                localStorage.clear();})
+                    
+                })
 
 
             
         })
+    // Contenu dans les champs du formulaire reste même après avoir cliqué sur le bouton commander
     })
