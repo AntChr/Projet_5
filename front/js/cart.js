@@ -1,14 +1,16 @@
+// Variable qui contient les données contenu dans le local storage
 let produitinLocalStorage = JSON.parse(localStorage.getItem("produit"));
 
+// Appel du serveur pour récupérer les données des produits
 fetch("http://localhost:3000/api/products")
     .then(async (rep) => {
         
         const productID = await rep.json();
-        // Affichage des produits du panier
 
         //Sélection de l'id où j'injecte le code HTML
         const positionpanier = document.querySelector("#cart__items");
         // Injection du HTML pour chaque produit dans le panier avec une boucle for
+        // Recherche du produit dans la base de donnée en fonction de l'id des produits présent dans le local storage
         let ProduitPanier = [];
         for (j = 0; j < produitinLocalStorage.length; j++) {
                 ProduitPanier += `<article class="cart__item" data-id="${produitinLocalStorage[j]._idproduct}" data-color="${produitinLocalStorage[j].couleur}">
@@ -75,7 +77,7 @@ fetch("http://localhost:3000/api/products")
 
         });
 
-        // Prix total du panier
+        // Prix total du panier 
         let prixTotalCalcul = [];
         let quantiteTotalPanier = [];
 
@@ -124,15 +126,19 @@ fetch("http://localhost:3000/api/products")
             const textAlertAV = (value) => {
                 return `Le Champ ${value} doit contenir au minimum 3 caractères`
             }
+            // Regex du prénom et du nom, 3 à 20 caractères minuscules et majuscules avec tiret
             const regExPrenomNom = (value) => {
                 return /^([A-Za-z]{3,10})?([-]{0,1})?([A-Za-z]{3,10})$/.test(value);
             }
+            // Regex de l'adresse et de la ville, 3 à 30 caractères minuscules et majuscules ainsi que les chiffres
             const regExAdresseVille = (value) => {
                 return /^[0-9A-Za-z, ]{3,30}$/.test(value)
             }
+            // Regex de l'email
             const regExmail = (value) => {
                 return /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)
             }
+            // Contrôle du prénom en fonction du regex, envoi d'un message d'alerte si le regex n'est pas respecté
             function prenomControle() {
                 const lePrenom = contact.firstName;
                 if (regExPrenomNom(lePrenom)) {
@@ -144,7 +150,7 @@ fetch("http://localhost:3000/api/products")
                     return false
                 };
             }
-
+            // Contrôle du nom en fonction du regex, envoi d'un message d'alerte si le regex n'est pas respecté
             function nomControle() {
                 const leNom = contact.lastName;
                 if (regExPrenomNom(leNom)) {
@@ -156,8 +162,9 @@ fetch("http://localhost:3000/api/products")
                     return false
                 };
             }
+            // Contrôle de l'adresse en fonction du regex, envoi d'un message d'alerte si le regex n'est pas respecté
             function adresseControle() {
-                const LAdresse = contact.adress;
+                const LAdresse = contact.address;
                 if (regExAdresseVille(LAdresse)) {
                     document.querySelector("#addressErrorMsg").textContent = ""
                     return true
@@ -167,6 +174,7 @@ fetch("http://localhost:3000/api/products")
                     return false
                 };
             }
+            // Contrôle de la ville en fonction du regex, envoi d'un message d'alerte si le regex n'est pas respecté
             function villeControle() {
                 const laVille = contact.city;
                 if (regExAdresseVille(laVille)) {
@@ -178,6 +186,7 @@ fetch("http://localhost:3000/api/products")
                     return false
                 };
             }
+            // Contrôle du mail en fonction du regex, envoi d'un message d'alerte si le regex n'est pas respecté
             function mailControle() {
                 const leMail = contact.email;
                 if (regExmail(leMail)) {
@@ -189,14 +198,7 @@ fetch("http://localhost:3000/api/products")
                     return false
                 };
             }
-
-            // Récupération des valeurs du formulaire pour les mettre dans le local storage
-            if (prenomControle() && nomControle() && adresseControle() && villeControle() && mailControle()) {
-                localStorage.setItem("contact", JSON.stringify(contact));
-            } else {
-                alert("Veuillez bien remplir le formulaire");
-            }
-            // Récupération des id des produits
+            // ajout dans un tableau de toutes les ID présent dans le local storage
             let products_Id = [];
             for (h = 0; h < produitinLocalStorage.length; h++) {
                 let AllID = produitinLocalStorage[h].id_product;
@@ -204,27 +206,28 @@ fetch("http://localhost:3000/api/products")
                 products_Id.push(AllID)
                 
             }
-            
-            // Mettre les values du formulaire et les produits dans un objet à envoyer au serveur
-            fetch('http://localhost:3000/api/products/order', {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-
-                },
-                body: JSON.stringify({
-                    contact:contact,
-                    products:products_Id
-                }),
-            })
-            .then((rep)=>rep.json())
-            .then((data)=>{
-                    window.location.href = "confirmation.html?orderId="+ data.orderId
-                    
+            // Récupération des valeurs du formulaire pour les mettre dans le local storage
+            if (prenomControle() && nomControle() && adresseControle() && villeControle() && mailControle()) {
+                // Envoi des données du contact et des id au server pour qu'il retourne un numéro de confirmation
+                fetch('http://localhost:3000/api/products/order', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+    
+                    },
+                    body: JSON.stringify({
+                        contact:contact,
+                        products:products_Id
+                    }),
                 })
-
-
-            
+                .then((rep)=>rep.json())
+                .then((data)=>{
+                    // Ajout dans l'URL de la page confirmation du numéro de confirmation
+                        window.location.href = "confirmation.html?orderId="+ data.orderId
+                        
+                    })
+            } else {
+                alert("Veuillez bien remplir le formulaire");
+            }   
         })
-    // Contenu dans les champs du formulaire reste même après avoir cliqué sur le bouton commander
     })

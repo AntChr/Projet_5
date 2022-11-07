@@ -3,7 +3,7 @@ const lien = document.URL;
 var url = new URL(lien);
 var id = url.searchParams.get("id");
 
-
+// Position de tous les éléments pour injecter dans le HTML
 const positionimg = document.querySelector('.item__img');
 const positiontitle = document.querySelector('#title');
 const positionprix = document.querySelector('#price');
@@ -29,7 +29,7 @@ fetch(`http://localhost:3000/api/products/${id}`)
 
           positiondescription.innerHTML = productID.description;
 
-          //Sélection de l'id où on injecte le code HTMl pour la couleur
+          //Injection dans le HTMl pour chaque spécifié dans la base de donnée
           productID.colors.forEach(color => {
                positioncouleur.innerHTML += `<option value="${color}">${color}</option>`
           });
@@ -80,7 +80,7 @@ fetch(`http://localhost:3000/api/products/${id}`)
                let produitinLocalStorage = JSON.parse(localStorage.getItem("produit"));
                //Converti le local storage qui est JSON en objet JavaScript
 
-               // Fonction fenêtre pop up qui redirige vers le panier ou l'accueil si la personne veut selectionner d'autres produits
+               // Fonction fenêtre pop up qui redirige vers le panier ou la page du produit 
                const fenConfirmation = () => {
                     if (window.confirm(` ${quantiteselect} ${productID.name} couleur : ${couleurchoisi} a bien été ajouté au panier
   consultez le panier  en cliquant sur OK `)) {
@@ -89,6 +89,7 @@ fetch(`http://localhost:3000/api/products/${id}`)
                          window.location.reload(true);
                     }
                }
+               // Fonction qui envoie une alerte et empêche l'envoie au panier si il y aucune quantité ou couleur
                function NoItem (p) {
                     if ((idquantite.value == 0) || (idcouleur.value == 0)){
                          alert("La quantité ou la couleur n'a pas été selectionné")
@@ -98,14 +99,7 @@ fetch(`http://localhost:3000/api/products/${id}`)
                     }
                }
 
-               // Fonction ajouter un produit dans le local storage
-               const ajoutProduitLocalStorage = () => {
-                    //Ajoute dans le tableau objet optionsProduit les values (couleurs,quantité) choisi par l'utilisateur
-                    produitinLocalStorage.push(optionsProduit);
-                    // Transformation en format JSON et envoi dans le local storage sous le nom "produit"
-                    localStorage.setItem("produit", JSON.stringify(produitinLocalStorage));
-               };
-               // Fonction pour ajouter le produit dans le local Storage et renvoit un tableau vide lorsqu'il y a rien dans le local
+               // Fonction pour ajouter le produit dans le local Storage et renvoit un tableau vide lorsqu'il y a rien dans le local Storage
                function getProduit() {
                     let items = localStorage.getItem("produit");
                     if (items == null) {
@@ -120,7 +114,6 @@ fetch(`http://localhost:3000/api/products/${id}`)
                     let foundProduct = items.find(elt => elt.id_product == product.id_product && elt.couleur == product.couleur);
                     console.log(foundProduct);
                     if (foundProduct != undefined) {
-                         // foundProduct.quantite ++;
                          foundProduct.quantite = foundProduct.quantite + product.quantite;
                          NoItem(items);
                     } else {
