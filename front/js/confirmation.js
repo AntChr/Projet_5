@@ -7,3 +7,4 @@ localStorage.clear();
 const positionconfirmation = document.querySelector("#orderId")
 
 positionconfirmation.innerHTML = id;
+

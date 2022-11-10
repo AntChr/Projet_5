@@ -13,7 +13,6 @@ const positioncouleur = document.querySelector('#colors');
 // affichage produit sélectionné par l'id
 fetch(`http://localhost:3000/api/products/${id}`)
      .then(async (rep) => {
-          console.log(rep);
           const productID = await rep.json();
 
 
@@ -42,12 +41,7 @@ fetch(`http://localhost:3000/api/products/${id}`)
 
           // Récupération des données sélectionnées par l'utilisateur et envoie du panier
 
-          // Sélection de l'id du formulaire couleur
-          const idcouleur = document.querySelector("#colors");
 
-
-          // Sélection de l'id du formulaire quantité
-          const idquantite = document.querySelector("#quantity");
 
 
 
@@ -55,34 +49,28 @@ fetch(`http://localhost:3000/api/products/${id}`)
           const btn_envoyerpanier = document.querySelector("#addToCart");
 
           // Ecouter le bouton et envoyer
+          if (btn_envoyerpanier !== null){
           btn_envoyerpanier.addEventListener("click", (event) => {
                event.preventDefault();
+           // Sélection de l'id du formulaire couleur
+          let couleur = document.querySelector("#colors").value;
 
-               // Choix de la couleur de l'utilisateur dans une variable
-               const couleurchoisi = idcouleur.value;
 
-               // Choix de la quantité de l'utilisateur dans une variable
-               const quantiteselect = idquantite.value;
-               console.log(quantiteselect);
+          // Sélection de l'id du formulaire quantité
+          let quantite = document.querySelector("#quantity").value;
 
                // Récupération des valeurs du formulaire
                let optionsProduit = {
                     id_product: productID._id,
-                    couleur: couleurchoisi,
-                    quantite: parseInt(quantiteselect)
+                    couleur: couleur,
+                    quantite: Number(quantite)
                }
 
                // Local Storage
-               // Stocker la récupération des valeurs du formulaire dans le local storage
-
-               // Variable qui contient les key et les values qui seront dans le local storage
-
-               let produitinLocalStorage = JSON.parse(localStorage.getItem("produit"));
-               //Converti le local storage qui est JSON en objet JavaScript
 
                // Fonction fenêtre pop up qui redirige vers le panier ou la page du produit 
                const fenConfirmation = () => {
-                    if (window.confirm(` ${quantiteselect} ${productID.name} couleur : ${couleurchoisi} a bien été ajouté au panier
+                    if (window.confirm(` ${quantite} ${productID.name} couleur : ${couleur} a bien été ajouté au panier
   consultez le panier  en cliquant sur OK `)) {
                          window.location.href = "./cart.html";
                     } else {
@@ -91,9 +79,12 @@ fetch(`http://localhost:3000/api/products/${id}`)
                }
                // Fonction qui envoie une alerte et empêche l'envoie au panier si il y aucune quantité ou couleur
                function NoItem (p) {
-                    if ((idquantite.value == 0) || (idcouleur.value == 0)){
+                    if (!quantite || !couleur){
                          alert("La quantité ou la couleur n'a pas été selectionné")
-                    } else {
+                    } else if(quantite <1 || quantite >100){
+                         alert("Veuillez selectionner une quantitée compris entre 1 et 100")
+                    } else
+                         {
                          fenConfirmation();
                          localStorage.setItem("produit", JSON.stringify(p));
                     }
@@ -115,7 +106,11 @@ fetch(`http://localhost:3000/api/products/${id}`)
                     console.log(foundProduct);
                     if (foundProduct != undefined) {
                          foundProduct.quantite = foundProduct.quantite + product.quantite;
-                         NoItem(items);
+                         if (foundProduct.quantite > 100) {
+                              alert("La quantitée maximale est dépassée")
+                         } else {
+                              NoItem(items)
+                         }
                     } else {
                          items.push(product);
                          NoItem(items);
@@ -124,7 +119,7 @@ fetch(`http://localhost:3000/api/products/${id}`)
                }
                addProduct(optionsProduit);
 
-          })
+          })}
 
      })
 

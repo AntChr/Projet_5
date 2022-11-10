@@ -12,30 +12,33 @@ fetch("http://localhost:3000/api/products")
         // Injection du HTML pour chaque produit dans le panier avec une boucle for
         // Recherche du produit dans la base de donnée en fonction de l'id des produits présent dans le local storage
         let ProduitPanier = [];
-        for (j = 0; j < produitinLocalStorage.length; j++) {
-                ProduitPanier += `<article class="cart__item" data-id="${produitinLocalStorage[j]._idproduct}" data-color="${produitinLocalStorage[j].couleur}">
-            <div class="cart__item__img">
-            <img src="${productID.find(x => x._id === produitinLocalStorage[j].id_product).imageUrl}" alt="${productID.find(x => x._id === produitinLocalStorage[j].id_product).altTxt}">
-            </div>
-            <div class="cart__item__content">
-            <div class="cart__item__content__description">
-                <h2>${productID.find(x => x._id === produitinLocalStorage[j].id_product).name}</h2>
-                <p>${produitinLocalStorage[j].couleur}</p>
-                <p>${productID.find(x => x._id === produitinLocalStorage[j].id_product).price} €</p>
-            </div>
-            <div class="cart__item__content__settings">
-                <div class="cart__item__content__settings__quantity">
-                <p>Qté : </p>
-                <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${produitinLocalStorage[j].quantite}">
+        if (produitinLocalStorage !== null) {
+            for (j = 0; j < produitinLocalStorage.length; j++) {
+                    ProduitPanier += `<article class="cart__item" data-id="${produitinLocalStorage[j]._idproduct}" data-color="${produitinLocalStorage[j].couleur}">
+                <div class="cart__item__img">
+                <img src="${productID.find(x => x._id === produitinLocalStorage[j].id_product).imageUrl}" alt="${productID.find(x => x._id === produitinLocalStorage[j].id_product).altTxt}">
                 </div>
-                <div class="cart__item__content__settings__delete">
-                <p class="deleteItem">Supprimer</p>
+                <div class="cart__item__content">
+                <div class="cart__item__content__description">
+                    <h2>${productID.find(x => x._id === produitinLocalStorage[j].id_product).name}</h2>
+                    <p>${produitinLocalStorage[j].couleur}</p>
+                    <p>${productID.find(x => x._id === produitinLocalStorage[j].id_product).price} €</p>
                 </div>
-            </div>
-            </div>
-            </article>`;
-                positionpanier.innerHTML = ProduitPanier;
-            }
+                <div class="cart__item__content__settings">
+                    <div class="cart__item__content__settings__quantity">
+                    <p>Qté : </p>
+                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${produitinLocalStorage[j].quantite}">
+                    </div>
+                    <div class="cart__item__content__settings__delete">
+                    <p class="deleteItem">Supprimer</p>
+                    </div>
+                </div>
+                </div>
+                </article>`;
+                    positionpanier.innerHTML = ProduitPanier;
+                }
+            
+        }
 
 
             
@@ -67,37 +70,40 @@ fetch("http://localhost:3000/api/products")
         // position des la rubrique quantité
 
         let modifquantite = document.querySelectorAll(".itemQuantity");
-
+        // Modification de la quantité pour une valeur compris entre 1 et 100
         modifquantite.forEach((qte, m) => {
             qte.addEventListener("change", p => {
+                if(modifquantite[m].value< 1 || modifquantite[m].value > 100){
+                    alert ("Veuillez selectionner une quantitée compris entre 1 et 100")
+                } else {
                 produitinLocalStorage[m].quantite = parseInt(modifquantite[m].value);
                 localStorage.setItem("produit", JSON.stringify(produitinLocalStorage));
-                window.location.reload(true);
+                window.location.reload(true);}
             })
 
         });
 
-        // Prix total du panier 
+        // Prix total du panier si il y a rien dans le local storage
         let prixTotalCalcul = [];
         let quantiteTotalPanier = [];
 
         const positionquantitetotal = document.querySelector("#totalQuantity")
         const positionprixtotal = document.querySelector("#totalPrice")
+        if (produitinLocalStorage !== null){
+            for (g = 0; g < produitinLocalStorage.length; g++) {
 
-        for (g = 0; g < produitinLocalStorage.length; g++) {
+                let prixProduitsPanier = productID.find(x => x._id === produitinLocalStorage[g].id_product).price * produitinLocalStorage[g].quantite;
+                let quantitePanier = produitinLocalStorage[g].quantite;
 
-            let prixProduitsPanier = productID.find(x => x._id === produitinLocalStorage[g].id_product).price * produitinLocalStorage[g].quantite;
-            let quantitePanier = produitinLocalStorage[g].quantite;
-
-            prixTotalCalcul.push(prixProduitsPanier)
-            quantiteTotalPanier.push(quantitePanier)
-            
+                prixTotalCalcul.push(prixProduitsPanier)
+                quantiteTotalPanier.push(quantitePanier)
+                
+            }
         }
-        
     
         const reducer = (accumulator, currentValue) => accumulator + currentValue;
         const prixTotal = prixTotalCalcul.reduce(reducer, 0);
-        const quantiteTotal = quantiteTotalPanier.reduce(reducer);
+        const quantiteTotal = quantiteTotalPanier.reduce(reducer, 0);
         
 
         positionquantitetotal.innerHTML = quantiteTotal;
@@ -200,14 +206,20 @@ fetch("http://localhost:3000/api/products")
             }
             // ajout dans un tableau de toutes les ID présent dans le local storage
             let products_Id = [];
-            for (h = 0; h < produitinLocalStorage.length; h++) {
-                let AllID = produitinLocalStorage[h].id_product;
+            if (produitinLocalStorage !== null){
+                for (h = 0; h < produitinLocalStorage.length; h++) {
+                    let AllID = produitinLocalStorage[h].id_product;
 
-                products_Id.push(AllID)
-                
+                    products_Id.push(AllID)
+                    
+                }
             }
-            // Récupération des valeurs du formulaire pour les mettre dans le local storage
-            if (prenomControle() && nomControle() && adresseControle() && villeControle() && mailControle()) {
+            // Si aucun produit n'est présent dans le panier envoie d'un message d'alerte
+            if(JSON.parse(localStorage.getItem("produit")) === null){
+                return alert("Le panier est vide")
+            }
+            // Récupération des valeurs du formulaire pour envoyer au serveur et recevoir le numéro de confirmation, message d'alerte si les conditions ne sont pas respectés
+            if(prenomControle() && nomControle() && adresseControle() && villeControle() && mailControle()) {
                 // Envoi des données du contact et des id au server pour qu'il retourne un numéro de confirmation
                 fetch('http://localhost:3000/api/products/order', {
                     method: "POST",
@@ -227,7 +239,7 @@ fetch("http://localhost:3000/api/products")
                         
                     })
             } else {
-                alert("Veuillez bien remplir le formulaire");
+                alert("Veuillez bien remplir le formulaire ou ajouter un produit dans le panier");
             }   
         })
     })
