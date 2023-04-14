@@ -1,6 +1,6 @@
 services:
   - name: backend
-    buildCommand: npm install
+    buildCommand: cd backend && npm install
     startCommand: npm start backend/app.js
     env:
       - key: NODE_ENV
