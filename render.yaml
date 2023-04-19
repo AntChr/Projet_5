@@ -1,2 +1,14 @@
-buildCommand: npm install
-startCommand: node backend/app.js
+version: 1
+services:
+  app:
+    env:
+      NODE_ENV: production
+    buildCommand: cd src && npm install
+    startCommand: npm start
+    envOn:
+      - primary
+    healthCheckPath: /healthcheck
+    port: 3000
+    routes:
+      - path: "/*"
+        priority: 10
